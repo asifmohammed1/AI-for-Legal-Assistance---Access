@@ -1,0 +1,12 @@
+﻿{
+  "compilerOptions": {
+    "checkJs":          true,
+    "strict":           false,
+    "noUnusedLocals":   false,
+    "target":           "ES2022",
+    "module":           "None",
+    "lib":              ["ES2022", "DOM"],
+    "allowJs":          true
+  },
+  "include": ["js/**/*.js", "tests/**/*.js"]
+}

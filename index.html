@@ -1,0 +1,523 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    AI for Legal Assistance & Access
+    Author:  Asif | AntiGravity
+    Version: 1.0.0
+    Powered by: Google Gemini 2.0 Flash
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Legal Assistance & Access | GenAI-Powered Legal Document Intelligence</title>
+  <meta name="description" content="Simplify legal documents, highlight contract risks, compare agreements, and prepare for legal consultations â€” powered by Google Gemini AI.">
+  <meta name="theme-color" content="#c9a84c">
+
+  <!-- PWA -->
+  <link rel="manifest" href="/manifest.json">
+
+  <!-- Preconnect for performance -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+  <!-- Styles -->
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <!-- Skip navigation for accessibility -->
+  <a class="skip-link" href="#main-content">Skip to main content</a>
+
+  <!-- Toast container -->
+  <div id="toast-container" aria-live="polite" aria-atomic="false"></div>
+
+  <!-- â”€â”€ Header â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
+  <header class="site-header" role="banner">
+    <div class="header__inner">
+      <a class="header__logo" href="/" aria-label="AI Legal Assistance & Access â€” home">
+        <div class="header__logo-icon" aria-hidden="true">âš–ï¸</div>
+        <div class="header__logo-text">
+          Legal AI Hub
+          <span>Powered by Google Gemini</span>
+        </div>
+      </a>
+
+      <div class="header__key">
+        <label for="api-key-input">API Key</label>
+        <input
+          type="password"
+          id="api-key-input"
+          name="api-key"
+          placeholder="Enter Gemini API key (optional)"
+          autocomplete="off"
+          spellcheck="false"
+          aria-label="Google Gemini API key â€” leave blank for demo mode"
+        >
+      </div>
+    </div>
+  </header>
+
+  <!-- â”€â”€ Navigation â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
+  <nav class="site-nav" aria-label="Feature sections">
+    <ul class="nav__list" role="tablist">
+      <li role="none">
+        <button class="nav__tab nav__tab--active" role="tab" aria-selected="true"
+          data-target="section-home" id="tab-home" aria-controls="section-home">
+          ðŸ  Overview
+        </button>
+      </li>
+      <li role="none">
+        <button class="nav__tab" role="tab" aria-selected="false"
+          data-target="section-simplify" id="tab-simplify" aria-controls="section-simplify">
+          ðŸ“„ Simplify
+        </button>
+      </li>
+      <li role="none">
+        <button class="nav__tab" role="tab" aria-selected="false"
+          data-target="section-risks" id="tab-risks" aria-controls="section-risks">
+          âš ï¸ Risk Highlighter
+        </button>
+      </li>
+      <li role="none">
+        <button class="nav__tab" role="tab" aria-selected="false"
+          data-target="section-compare" id="tab-compare" aria-controls="section-compare">
+          âš–ï¸ Compare
+        </button>
+      </li>
+      <li role="none">
+        <button class="nav__tab" role="tab" aria-selected="false"
+          data-target="section-qa" id="tab-qa" aria-controls="section-qa">
+          ðŸ’¬ Ask Your Doc
+        </button>
+      </li>
+      <li role="none">
+        <button class="nav__tab" role="tab" aria-selected="false"
+          data-target="section-checklist" id="tab-checklist" aria-controls="section-checklist">
+          âœ… Checklist
+        </button>
+      </li>
+      <li role="none">
+        <button class="nav__tab" role="tab" aria-selected="false"
+          data-target="section-prep" id="tab-prep" aria-controls="section-prep">
+          ðŸ¤ Lawyer Prep
+        </button>
+      </li>
+      <li role="none">
+        <button class="nav__tab" role="tab" aria-selected="false"
+          data-target="section-dict" id="tab-dict" aria-controls="section-dict">
+          ðŸ“– Legal Dictionary
+        </button>
+      </li>
+    </ul>
+  </nav>
+
+  <!-- â”€â”€ Main â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
+  <main class="main" id="main-content" tabindex="-1">
+
+    <!-- â”€â”€ Home / Overview â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
+    <section id="section-home" class="section" role="tabpanel" aria-labelledby="tab-home">
+      <div class="hero">
+        <div class="hero__badge" aria-label="AI-powered platform">
+          <span aria-hidden="true">âœ¨</span> GenAI-Powered Legal Intelligence
+        </div>
+
+        <h1 class="hero__title">
+          Understand Law.<br>Navigate Contracts.<br>Know Your Rights.
+        </h1>
+
+        <p class="hero__subtitle">
+          AI-powered legal document assistance that simplifies complex agreements,
+          highlights hidden risks, and prepares you for professional consultations â€”
+          all in plain English.
+        </p>
+
+        <div class="hero__disclaimer" role="note">
+          <span aria-hidden="true">âš ï¸</span>
+          <span>
+            This platform provides <strong>informational assistance only</strong>.
+            It does not constitute legal advice. Always consult a qualified legal professional
+            for guidance specific to your situation.
+          </span>
+        </div>
+      </div>
+
+      <!-- Stats -->
+      <div class="stats-row" aria-label="Platform statistics">
+        <div class="stat-card">
+          <div class="stat-card__value" data-count="7" aria-label="7">0</div>
+          <div class="stat-card__label">AI Features</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card__value" data-count="20" aria-label="20+">0</div>
+          <div class="stat-card__label">Test Suites</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card__value" data-count="500" aria-label="500KB">0</div>
+          <div class="stat-card__label">Max Upload (KB)</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card__value" data-count="100" aria-label="100%">0</div>
+          <div class="stat-card__label">Offline-Ready (%)</div>
+        </div>
+      </div>
+
+      <!-- Feature grid -->
+      <div class="card">
+        <div class="section-header">
+          <p class="section-header__eyebrow">What you can do</p>
+          <h2 class="section-header__title">7 AI-Powered Legal Tools</h2>
+          <p class="section-header__desc">
+            Select any tab above to get started. No sign-up required â€” works in demo mode
+            without an API key.
+          </p>
+        </div>
+
+        <ul style="list-style:none;display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1rem;">
+          <li style="padding:1rem;background:rgba(255,255,255,0.03);border:1px solid rgba(201,168,76,0.1);border-radius:12px;">
+            <strong style="color:#c9a84c;">ðŸ“„ Document Simplifier</strong>
+            <p style="font-size:0.85rem;color:#94a3b8;margin-top:0.5rem;">
+              Paste any legal document and get a plain-English summary covering rights, obligations, and key dates.
+            </p>
+          </li>
+          <li style="padding:1rem;background:rgba(255,255,255,0.03);border:1px solid rgba(201,168,76,0.1);border-radius:12px;">
+            <strong style="color:#ef4444;">âš ï¸ Risk Highlighter</strong>
+            <p style="font-size:0.85rem;color:#94a3b8;margin-top:0.5rem;">
+              Scans contracts for dangerous clauses â€” auto-renewals, broad indemnification, liability caps, and more.
+            </p>
+          </li>
+          <li style="padding:1rem;background:rgba(255,255,255,0.03);border:1px solid rgba(201,168,76,0.1);border-radius:12px;">
+            <strong style="color:#00b4d8;">âš–ï¸ Contract Comparator</strong>
+            <p style="font-size:0.85rem;color:#94a3b8;margin-top:0.5rem;">
+              Paste two contracts side-by-side and receive a structured comparison table with a clear recommendation.
+            </p>
+          </li>
+          <li style="padding:1rem;background:rgba(255,255,255,0.03);border:1px solid rgba(201,168,76,0.1);border-radius:12px;">
+            <strong style="color:#7c3aed;">ðŸ’¬ Document Q&amp;A</strong>
+            <p style="font-size:0.85rem;color:#94a3b8;margin-top:0.5rem;">
+              Upload a document and ask specific questions â€” AI answers are grounded strictly on your document text.
+            </p>
+          </li>
+          <li style="padding:1rem;background:rgba(255,255,255,0.03);border:1px solid rgba(201,168,76,0.1);border-radius:12px;">
+            <strong style="color:#22c55e;">âœ… Action Checklist</strong>
+            <p style="font-size:0.85rem;color:#94a3b8;margin-top:0.5rem;">
+              Generates a personalised before-signing and after-signing checklist from your document.
+            </p>
+          </li>
+          <li style="padding:1rem;background:rgba(255,255,255,0.03);border:1px solid rgba(201,168,76,0.1);border-radius:12px;">
+            <strong style="color:#f59e0b;">ðŸ¤ Lawyer Prep</strong>
+            <p style="font-size:0.85rem;color:#94a3b8;margin-top:0.5rem;">
+              Generates 7â€“10 targeted questions to ask your solicitor before signing anything.
+            </p>
+          </li>
+          <li style="padding:1rem;background:rgba(255,255,255,0.03);border:1px solid rgba(201,168,76,0.1);border-radius:12px;">
+            <strong style="color:#c9a84c;">ðŸ“– Legal Dictionary</strong>
+            <p style="font-size:0.85rem;color:#94a3b8;margin-top:0.5rem;">
+              Instantly look up and understand any legal term â€” explained in plain English with examples.
+            </p>
+          </li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- â”€â”€ Document Simplifier â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
+    <section id="section-simplify" class="section" role="tabpanel" aria-labelledby="tab-simplify" hidden>
+      <div class="section-header">
+        <p class="section-header__eyebrow">Feature 1 of 7</p>
+        <h2 class="section-header__title">ðŸ“„ Document Simplifier</h2>
+        <p class="section-header__desc">
+          Paste any legal document â€” a lease, employment contract, terms of service, or NDA â€”
+          and receive a clear, jargon-free summary covering rights, obligations, and key dates.
+        </p>
+      </div>
+
+      <div class="card">
+        <div class="form-group">
+          <label class="form-label" for="ta-simplify">
+            Paste your legal document
+            <span>(minimum 50 characters)</span>
+          </label>
+          <textarea
+            class="form-textarea"
+            id="ta-simplify"
+            name="simplify-doc"
+            placeholder="Paste the full text of your legal document here. For example: a rental agreement, employment contract, NDA, terms of service, or any other legal document you need explained in plain English..."
+            aria-describedby="simplify-hint"
+          ></textarea>
+          <p id="simplify-hint" class="sr-only">Paste or type your legal document text above, then click Simplify to receive a plain-English summary.</p>
+        </div>
+
+        <div class="mt-6">
+          <button class="btn btn--primary" id="btn-simplify" type="button" aria-live="polite">
+            âœ¨ Simplify Document
+          </button>
+        </div>
+
+        <div class="output-panel" id="out-simplify" hidden aria-live="polite" aria-label="Simplified document result"></div>
+      </div>
+    </section>
+
+    <!-- â”€â”€ Risk Highlighter â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
+    <section id="section-risks" class="section" role="tabpanel" aria-labelledby="tab-risks" hidden>
+      <div class="section-header">
+        <p class="section-header__eyebrow">Feature 2 of 7</p>
+        <h2 class="section-header__title">âš ï¸ Risk Highlighter</h2>
+        <p class="section-header__desc">
+          Paste a contract and let AI scan for problematic clauses â€” automatic renewals,
+          broad indemnification, one-sided liability caps, unilateral amendment rights,
+          and forced arbitration provisions.
+        </p>
+      </div>
+
+      <div class="card">
+        <div class="form-group">
+          <label class="form-label" for="ta-risk">
+            Paste contract or agreement
+            <span>(minimum 50 characters)</span>
+          </label>
+          <textarea
+            class="form-textarea"
+            id="ta-risk"
+            name="risk-doc"
+            placeholder="Paste the contract or agreement you want analysed for risks. The AI will identify HIGH, MEDIUM, and LOW risk clauses and explain what each means in plain English..."
+            aria-describedby="risk-hint"
+          ></textarea>
+          <p id="risk-hint" class="sr-only">Paste your contract text above and click Analyse Risks to identify problematic clauses.</p>
+        </div>
+
+        <div class="mt-6">
+          <button class="btn btn--primary" id="btn-risk" type="button">
+            ðŸ” Analyse Risks
+          </button>
+        </div>
+
+        <div class="output-panel" id="out-risk" hidden aria-live="polite" aria-label="Risk analysis result"></div>
+      </div>
+    </section>
+
+    <!-- â”€â”€ Contract Comparator â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
+    <section id="section-compare" class="section" role="tabpanel" aria-labelledby="tab-compare" hidden>
+      <div class="section-header">
+        <p class="section-header__eyebrow">Feature 3 of 7</p>
+        <h2 class="section-header__title">âš–ï¸ Contract Comparator</h2>
+        <p class="section-header__desc">
+          Paste two contracts side-by-side. AI will produce a structured comparison table
+          covering term length, renewal terms, liability, dispute resolution, and governing law â€”
+          then recommend which is more favourable.
+        </p>
+      </div>
+
+      <div class="card">
+        <div class="compare-grid">
+          <div class="form-group">
+            <p class="compare-label compare-label--a" aria-label="Contract A">CONTRACT A</p>
+            <label class="form-label sr-only" for="ta-compare-a">Contract A text</label>
+            <textarea
+              class="form-textarea"
+              id="ta-compare-a"
+              name="contract-a"
+              placeholder="Paste the text of Contract A here..."
+              aria-label="Contract A text"
+            ></textarea>
+          </div>
+          <div class="form-group">
+            <p class="compare-label compare-label--b" aria-label="Contract B">CONTRACT B</p>
+            <label class="form-label sr-only" for="ta-compare-b">Contract B text</label>
+            <textarea
+              class="form-textarea"
+              id="ta-compare-b"
+              name="contract-b"
+              placeholder="Paste the text of Contract B here..."
+              aria-label="Contract B text"
+            ></textarea>
+          </div>
+        </div>
+
+        <button class="btn btn--cyan" id="btn-compare" type="button">
+          âš–ï¸ Compare Contracts
+        </button>
+
+        <div class="output-panel" id="out-compare" hidden aria-live="polite" aria-label="Contract comparison result"></div>
+      </div>
+    </section>
+
+    <!-- â”€â”€ Document Q&A â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
+    <section id="section-qa" class="section" role="tabpanel" aria-labelledby="tab-qa" hidden>
+      <div class="section-header">
+        <p class="section-header__eyebrow">Feature 4 of 7</p>
+        <h2 class="section-header__title">ðŸ’¬ Ask Your Document</h2>
+        <p class="section-header__desc">
+          Upload a plain-text legal document, then ask specific questions about it.
+          All answers are grounded strictly on the document content â€” the AI will not invent information.
+        </p>
+      </div>
+
+      <div class="card">
+        <div class="form-group">
+          <label class="file-upload-label" for="qa-file" id="qa-file-label">
+            <span aria-hidden="true">ðŸ“</span>
+            <span>Click to upload a .txt document (max 500 KB)</span>
+            <input
+              type="file"
+              id="qa-file"
+              name="qa-file"
+              accept=".txt,text/plain"
+              aria-describedby="upload-status"
+            >
+          </label>
+          <p id="upload-status" aria-live="polite"></p>
+        </div>
+
+        <div class="qa-input-row mt-6">
+          <label class="sr-only" for="qa-input">Ask a question about your document</label>
+          <input
+            class="form-input"
+            type="text"
+            id="qa-input"
+            name="qa-question"
+            placeholder="e.g. Can I sublicense to my subsidiaries? What is the notice period?"
+            aria-label="Question about your uploaded document"
+          >
+          <button class="btn btn--primary" id="btn-qa" type="button">
+            ðŸ’¬ Ask
+          </button>
+        </div>
+
+        <div class="output-panel" id="out-qa" hidden aria-live="polite" aria-label="Document Q&A answer"></div>
+      </div>
+    </section>
+
+    <!-- â”€â”€ Action Checklist â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
+    <section id="section-checklist" class="section" role="tabpanel" aria-labelledby="tab-checklist" hidden>
+      <div class="section-header">
+        <p class="section-header__eyebrow">Feature 5 of 7</p>
+        <h2 class="section-header__title">âœ… Action Checklist</h2>
+        <p class="section-header__desc">
+          Paste your legal document and receive a personalised, actionable checklist:
+          what to verify before signing and what obligations to track after signing.
+        </p>
+      </div>
+
+      <div class="card">
+        <div class="form-group">
+          <label class="form-label" for="ta-checklist">
+            Paste your legal document
+            <span>(minimum 50 characters)</span>
+          </label>
+          <textarea
+            class="form-textarea"
+            id="ta-checklist"
+            name="checklist-doc"
+            placeholder="Paste the legal document you need an action checklist for..."
+          ></textarea>
+        </div>
+
+        <div class="mt-6">
+          <button class="btn btn--primary" id="btn-checklist" type="button">
+            âœ… Generate Checklist
+          </button>
+        </div>
+
+        <div class="output-panel" id="out-checklist" hidden aria-live="polite" aria-label="Action checklist result"></div>
+      </div>
+    </section>
+
+    <!-- â”€â”€ Lawyer Prep â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
+    <section id="section-prep" class="section" role="tabpanel" aria-labelledby="tab-prep" hidden>
+      <div class="section-header">
+        <p class="section-header__eyebrow">Feature 6 of 7</p>
+        <h2 class="section-header__title">ðŸ¤ Lawyer Preparation</h2>
+        <p class="section-header__desc">
+          Paste your document and get a tailored list of 7â€“10 specific, insightful questions
+          to ask your solicitor or lawyer before signing â€” focused on ambiguous clauses and hidden risks.
+        </p>
+      </div>
+
+      <div class="card">
+        <div class="form-group">
+          <label class="form-label" for="ta-prep">
+            Paste your legal document
+            <span>(minimum 50 characters)</span>
+          </label>
+          <textarea
+            class="form-textarea"
+            id="ta-prep"
+            name="prep-doc"
+            placeholder="Paste the document you'll be discussing with a legal professional..."
+          ></textarea>
+        </div>
+
+        <div class="mt-6">
+          <button class="btn btn--primary" id="btn-prep" type="button">
+            ðŸ¤ Prepare Questions
+          </button>
+        </div>
+
+        <div class="output-panel" id="out-prep" hidden aria-live="polite" aria-label="Lawyer preparation questions"></div>
+      </div>
+    </section>
+
+    <!-- â”€â”€ Legal Dictionary â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
+    <section id="section-dict" class="section" role="tabpanel" aria-labelledby="tab-dict" hidden>
+      <div class="section-header">
+        <p class="section-header__eyebrow">Feature 7 of 7</p>
+        <h2 class="section-header__title">ðŸ“– Legal Dictionary</h2>
+        <p class="section-header__desc">
+          Enter any legal term or phrase and receive a plain-English definition, a practical
+          example, and an explanation of why it matters in contracts.
+        </p>
+      </div>
+
+      <div class="card">
+        <div class="dict-search-row">
+          <label class="sr-only" for="dict-input">Legal term to look up</label>
+          <input
+            class="form-input"
+            type="text"
+            id="dict-input"
+            name="dict-term"
+            placeholder="e.g. indemnification, force majeure, arbitration clause, liquidated damages..."
+            aria-label="Legal term to define"
+          >
+          <button class="btn btn--primary" id="btn-dict" type="button">
+            ðŸ” Look Up
+          </button>
+        </div>
+
+        <div class="output-panel" id="out-dict" hidden aria-live="polite" aria-label="Legal term definition"></div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- â”€â”€ Footer â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
+  <footer class="site-footer" role="contentinfo">
+    <div class="footer__inner">
+      <div class="footer__disclaimer">
+        <h2>âš ï¸ Important Legal Disclaimer</h2>
+        <p>
+          This platform is an <strong>AI-powered informational tool</strong> only.
+          All outputs are generated by Google Gemini AI and are intended to help you
+          understand legal documents â€” they do <strong>not</strong> constitute legal advice
+          and should not be relied upon as a substitute for advice from a qualified,
+          licensed legal professional. Laws vary by jurisdiction and your specific
+          circumstances matter. Always consult a solicitor or lawyer before taking
+          any legal action or signing any binding agreement.
+        </p>
+      </div>
+
+      <p class="footer__copy">
+        &copy; 2026 <a href="#">Asif | AntiGravity</a> &mdash;
+        Built with Google Gemini AI &bull; Plain HTML/CSS/JS &bull; No frameworks
+      </p>
+    </div>
+  </footer>
+
+  <!-- Scripts (defer â€” no render blocking) -->
+  <script defer src="js/config.js"></script>
+  <script defer src="js/ui.js"></script>
+  <script defer src="js/gemini.js"></script>
+  <script defer src="js/document.js"></script>
+  <script defer src="js/analysis.js"></script>
+  <script defer src="js/checklist.js"></script>
+  <script defer src="js/app.js"></script>
+</body>
+</html>

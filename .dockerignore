@@ -1,0 +1,6 @@
+﻿node_modules/
+*.md
+.eslintrc.json
+jsconfig.json
+package*.json
+.github/
