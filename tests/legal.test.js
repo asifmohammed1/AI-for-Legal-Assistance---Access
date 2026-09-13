@@ -210,7 +210,7 @@ suite('fromTextarea - validation', () => {
 });
 
 suite('fromTextarea - sanitises XSS output', () => {
-  const longXss = ('<script>').repeat(20) + ' legal text long enough to pass minimum character validation threshold for the document analysis pipeline';
+  const longXss = `${'<script>'.repeat(20)} legal text long enough to pass minimum character validation threshold for the document analysis pipeline`;
   const result = fromTextarea(longXss);
   if (!result.error) {
     assert(!result.text.includes('<script>'), 'script tags removed from output');
