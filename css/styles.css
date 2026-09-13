@@ -1,4 +1,4 @@
-﻿/**
+/**
  * AI Legal Assistance & Access â€” Design System
  * Dark theme with legal-gold accent, glassmorphism, and micro-animations.
  * @version 1.0.0
@@ -775,3 +775,44 @@ input[type="file"] { position: absolute; width: 1px; height: 1px; opacity: 0; }
 ::-webkit-scrollbar-track { background: var(--clr-bg-base); }
 ::-webkit-scrollbar-thumb { background: var(--clr-bg-hover); border-radius: 4px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--clr-gold-dim); }
+
+/* â”€â”€ Feature Grid (homepage) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+.feature-grid {
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: var(--sp-4);
+}
+
+.feature-item {
+  padding: var(--sp-4);
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(201,168,76,0.1);
+  border-radius: var(--r-md);
+  transition: border-color var(--t-normal), background var(--t-normal), transform var(--t-normal);
+}
+
+.feature-item:hover {
+  border-color: rgba(201,168,76,0.3);
+  background: rgba(255,255,255,0.06);
+  transform: translateY(-2px);
+}
+
+.feature-item__title {
+  display: block;
+  font-size: 0.95rem;
+  margin-bottom: var(--sp-2);
+}
+
+.feature-item__title--gold   { color: var(--clr-gold); }
+.feature-item__title--red    { color: var(--clr-risk-high); }
+.feature-item__title--cyan   { color: var(--clr-cyan); }
+.feature-item__title--purple { color: var(--clr-purple); }
+.feature-item__title--green  { color: var(--clr-risk-low); }
+.feature-item__title--amber  { color: var(--clr-risk-medium); }
+
+.feature-item__desc {
+  font-size: 0.85rem;
+  color: var(--clr-text-secondary);
+  line-height: 1.5;
+}

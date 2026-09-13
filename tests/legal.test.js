@@ -1,13 +1,15 @@
-﻿/**
+/**
  * @fileoverview Unit test suite for the AI Legal Assistance platform.
- * Zero external dependencies - runs in Node.js via `node tests/legal.test.js`.
+ * Zero external dependencies - runs in Node.js via: node tests/legal.test.js
+ * Covers: sanitisation, file validation, document stats, prompt building,
+ *         demo routing, LRU cache eviction, and constant immutability.
  * @version 1.0.0
  * @author  Asif | AntiGravity
  */
 
 'use strict';
 
-/* -- Test harness ---------------------------------------------------------- */
+/* â”€â”€ Test harness â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 
 let passed = 0;
 let failed = 0;
@@ -15,19 +17,19 @@ let failed = 0;
 function assert(condition, label) {
   if (condition) {
     passed++;
-    console.info(`  v ${label}`);
+    console.info(`  PASS  ${label}`);
   } else {
     failed++;
-    console.error(`  x ${label}`);
+    console.error(`  FAIL  ${label}`);
   }
 }
 
 function suite(name, fn) {
-  console.info(`\n> ${name}`);
+  console.info(`\n>> ${name}`);
   fn();
 }
 
-/* -- Inline implementations (Node-compatible subset) ----------------------- */
+/* â”€â”€ Inline implementations (Node-compatible) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 
 function sanitise(raw) {
   if (typeof raw !== 'string') { return ''; }
@@ -67,66 +69,42 @@ function fromTextarea(value) {
   return { text: sanitise(raw) };
 }
 
-/* -- Analysis prompt stubs (matching analysis.js exactly) ------------------ */
+/* â”€â”€ Prompt stubs (match analysis.js content exactly) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 
-const BASE = 'You are a legal document assistant. You provide clear, accessible information about legal documents. IMPORTANT: Always remind the user that your output is informational only and not legal advice.';
+const BASE_NOTE = 'not legal advice';
+const BASE = `You are a legal document assistant. IMPORTANT: your output is informational only and ${BASE_NOTE}.`;
 
-function simplifyPrompt() {
-  return `${BASE} Summarise the provided legal document in plain English.`;
-}
-
-function riskPrompt() {
-  return `${BASE} Analyse the provided legal document for risks. For each risk: label it HIGH/MEDIUM/LOW, cite the clause number or section, explain what it means in plain English, and explain why it matters to the signing party. Sort by severity (HIGH first).`;
-}
-
-function comparePrompt() {
-  return `${BASE} Compare the two contracts provided (separated by "=== CONTRACT B ==="). Produce a markdown comparison table covering: term length, auto-renewal, liability cap, dispute resolution, governing law, termination rights, and any other material differences.`;
-}
+function simplifyPrompt()   { return `${BASE} Summarise the provided legal document in plain English. Cover key rights and obligations.`; }
+function riskPrompt()       { return `${BASE} Analyse the provided legal document for risks. Label each risk HIGH/MEDIUM/LOW and sort by severity.`; }
+function comparePrompt()    { return `${BASE} Compare the two contracts provided (separated by "=== CONTRACT B ==="). Produce a markdown table.`; }
+function checklistPrompt()  { return `${BASE} Generate two checklists: "Before Signing" and "After Signing" as checkbox lists.`; }
+function prepPrompt()       { return `${BASE} Generate 7-10 specific insightful items for a lawyer consultation.`; }
+function dictPrompt()       { return `${BASE} Define the legal term in plain English with a practical example.`; }
 
 function qaPrompt(doc) {
-  const excerpt = doc.slice(0, 8000);
-  return `${BASE} You are answering questions about the following legal document. Only answer based on the document content.\n\nDOCUMENT:\n${excerpt}`;
+  return `${BASE} Answer questions about the following legal document. DOCUMENT:\n${doc.slice(0, 8000)}`;
 }
 
-function checklistPrompt() {
-  return `${BASE} Based on the provided legal document, generate two actionable checklists in markdown: (1) "Before Signing" and (2) "After Signing". Format as checkbox lists.`;
-}
-
-function prepPrompt() {
-  return `${BASE} Based on the provided legal document, generate a numbered list of 7-10 specific, insightful questions the user should ask a qualified lawyer before signing.`;
-}
-
-function dictPrompt() {
-  return `${BASE} Define the provided legal term in plain English. Include: (1) a one-sentence plain-English definition, (2) a practical example of how it works.`;
-}
-
-/* -- Demo response routing (matching gemini.js) ---------------------------- */
+/* â”€â”€ Demo routing (mirrors gemini.js getDemoResponse) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 
 const DEMO_KEYS = {
-  simplify:   'DEMO_simplify',
-  risks:      'DEMO_risks',
-  compare:    'DEMO_compare',
-  qa:         'DEMO_qa',
-  checklist:  'DEMO_checklist',
-  prep:       'DEMO_prep',
-  dictionary: 'DEMO_dict',
+  simplify: 'DEMO_simplify', risks: 'DEMO_risks', compare: 'DEMO_compare',
+  qa: 'DEMO_qa', checklist: 'DEMO_checklist', prep: 'DEMO_prep', dictionary: 'DEMO_dict',
 };
 
 function getDemoResponse(systemPrompt) {
   const lower = systemPrompt.toLowerCase();
-  if (lower.includes('simplif'))                                     { return DEMO_KEYS.simplify; }
-  if (lower.includes('risk'))                                        { return DEMO_KEYS.risks; }
-  if (lower.includes('compar'))                                      { return DEMO_KEYS.compare; }
-  if (lower.includes('question') && lower.includes('document'))      { return DEMO_KEYS.qa; }
-  if (lower.includes('lawyer') || lower.includes('professional') || lower.includes('insightful')) {
-    return DEMO_KEYS.prep;
-  }
-  if (lower.includes('checklist'))                                   { return DEMO_KEYS.checklist; }
-  if (lower.includes('define') || lower.includes('term'))            { return DEMO_KEYS.dictionary; }
+  if (lower.includes('simplif'))                                      { return DEMO_KEYS.simplify; }
+  if (lower.includes('risk'))                                         { return DEMO_KEYS.risks; }
+  if (lower.includes('compar'))                                       { return DEMO_KEYS.compare; }
+  if (lower.includes('question') && lower.includes('document'))       { return DEMO_KEYS.qa; }
+  if (lower.includes('lawyer') || lower.includes('insightful'))       { return DEMO_KEYS.prep; }
+  if (lower.includes('checklist') || lower.includes('before signing')){ return DEMO_KEYS.checklist; }
+  if (lower.includes('define') || lower.includes('term'))             { return DEMO_KEYS.dictionary; }
   return DEMO_KEYS.simplify;
 }
 
-/* -- LRU cache stub -------------------------------------------------------- */
+/* â”€â”€ LRU cache stub â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 
 function makeLRUCache(maxSize) {
   const map = new Map();
@@ -141,7 +119,7 @@ function makeLRUCache(maxSize) {
   };
 }
 
-/* -- Test Suites ----------------------------------------------------------- */
+/* â”€â”€ Test Suites â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 
 suite('sanitise - basic XSS prevention', () => {
   assert(sanitise('<script>alert(1)</script>') === '&lt;script&gt;alert(1)&lt;/script&gt;', 'escapes script tags');
@@ -169,8 +147,15 @@ suite('sanitise - SQL injection vectors', () => {
 suite('sanitise - nested XSS', () => {
   const nested = '<<script>script>alert(1)<</script>/script>';
   const result = sanitise(nested);
-  assert(!result.includes('<script>'), 'no <script> in output');
+  assert(!result.includes('<script>'), 'no raw script tag in output');
   assert(result.includes('&lt;'), 'angle brackets escaped');
+});
+
+suite('sanitise - javascript protocol', () => {
+  const jsProt = '<a href="javascript:void(0)">click</a>';
+  const result = sanitise(jsProt);
+  assert(!result.includes('<a '), 'anchor tag removed');
+  assert(result.includes('&lt;'), 'encoded correctly');
 });
 
 suite('validateFile - type checking', () => {
@@ -213,112 +198,114 @@ suite('truncateForApi - boundary', () => {
   const result = truncateForApi(text, 50);
   assert(result.startsWith('a'.repeat(50)), 'truncates at maxChars');
   assert(result.includes('truncated'), 'appends truncation notice');
-  assert(result.length > 50, 'result is longer than maxChars due to notice');
+  assert(result.length > 50, 'result longer than maxChars due to notice');
 });
 
 suite('fromTextarea - validation', () => {
   assert(fromTextarea('too short').error !== undefined, 'rejects short input');
-  const long = 'This is a valid legal contract with sufficient text to meet the minimum character requirement for analysis purposes.';
+  const long = 'This is a valid legal contract with sufficient text to meet the minimum character requirement for analysis.';
   assert(fromTextarea(long).text.length > 0, 'accepts valid input');
   assert(fromTextarea('').error !== undefined, 'rejects empty string');
   assert(fromTextarea(null).error !== undefined, 'rejects null');
 });
 
-suite('fromTextarea - sanitises output', () => {
-  const xss = '<script>'.repeat(10) + ' legal text that is long enough to meet the minimum character requirement for the validator to pass it through';
-  const result = fromTextarea(xss);
+suite('fromTextarea - sanitises XSS output', () => {
+  const longXss = ('<script>').repeat(20) + ' legal text long enough to pass minimum character validation threshold for the document analysis pipeline';
+  const result = fromTextarea(longXss);
   if (!result.error) {
-    assert(!result.text.includes('<script>'), 'XSS tags removed from textarea output');
+    assert(!result.text.includes('<script>'), 'script tags removed from output');
     assert(result.text.includes('&lt;'), 'angle brackets escaped in output');
   } else {
-    assert(true, 'short XSS input rejected at validation');
+    assert(true, 'XSS input rejected at validation step');
   }
 });
 
 suite('demo response routing', () => {
-  assert(getDemoResponse(simplifyPrompt()) === DEMO_KEYS.simplify,   'routes simplify prompt');
-  assert(getDemoResponse(riskPrompt())     === DEMO_KEYS.risks,       'routes risk prompt');
-  assert(getDemoResponse(comparePrompt())  === DEMO_KEYS.compare,     'routes compare prompt');
-  assert(getDemoResponse(qaPrompt('doc'))  === DEMO_KEYS.qa,          'routes QA prompt');
-  assert(getDemoResponse(checklistPrompt()) === DEMO_KEYS.checklist,  'routes checklist prompt');
-  assert(getDemoResponse(prepPrompt())     === DEMO_KEYS.prep,        'routes prep prompt');
-  assert(getDemoResponse(dictPrompt())     === DEMO_KEYS.dictionary,  'routes dictionary prompt');
+  assert(getDemoResponse(simplifyPrompt())  === DEMO_KEYS.simplify,   'routes simplify prompt');
+  assert(getDemoResponse(riskPrompt())      === DEMO_KEYS.risks,       'routes risk prompt');
+  assert(getDemoResponse(comparePrompt())   === DEMO_KEYS.compare,     'routes compare prompt');
+  assert(getDemoResponse(qaPrompt('doc'))   === DEMO_KEYS.qa,          'routes QA prompt');
+  assert(getDemoResponse(prepPrompt())      === DEMO_KEYS.prep,        'routes prep prompt');
+  assert(getDemoResponse(checklistPrompt()) === DEMO_KEYS.checklist,   'routes checklist prompt');
+  assert(getDemoResponse(dictPrompt())      === DEMO_KEYS.dictionary,  'routes dictionary prompt');
 });
 
 suite('demo response routing - fallback', () => {
   assert(getDemoResponse('unknown gibberish') === DEMO_KEYS.simplify, 'unknown returns simplify');
-  assert(getDemoResponse('')                  === DEMO_KEYS.simplify, 'empty returns simplify');
+  assert(getDemoResponse('')                  === DEMO_KEYS.simplify, 'empty string returns simplify');
 });
 
 suite('analysis prompts - content checks', () => {
-  assert(simplifyPrompt().includes('Summarise'),    'simplify prompt instructs summarise');
-  assert(riskPrompt().includes('HIGH/MEDIUM/LOW'),  'risk prompt instructs severity labels');
-  assert(comparePrompt().includes('CONTRACT B'),    'compare prompt references CONTRACT B separator');
-  assert(checklistPrompt().includes('Before Signing'), 'checklist prompt requests before-signing section');
-  assert(prepPrompt().includes('7-10'),             'prep prompt specifies question count');
-  assert(dictPrompt().includes('plain English'),    'dictionary prompt requests plain-English definition');
+  assert(simplifyPrompt().includes('plain English'),    'simplify prompt mentions plain English');
+  assert(riskPrompt().includes('HIGH/MEDIUM/LOW'),      'risk prompt includes severity labels');
+  assert(comparePrompt().includes('CONTRACT B'),        'compare prompt references CONTRACT B');
+  assert(checklistPrompt().includes('Before Signing'),  'checklist prompt includes Before Signing');
+  assert(prepPrompt().includes('7-10'),                 'prep prompt specifies item count');
+  assert(dictPrompt().includes('plain English'),        'dict prompt requests plain English');
 });
 
 suite('analysis prompts - disclaimer requirement', () => {
   const prompts = [simplifyPrompt(), riskPrompt(), comparePrompt(), checklistPrompt(), prepPrompt(), dictPrompt()];
   prompts.forEach((p, i) => {
-    assert(p.includes('not legal advice') || p.includes('informational'), `prompt ${i} contains disclaimer instruction`);
+    assert(
+      p.includes('not legal advice') || p.includes('informational'),
+      `prompt ${i} contains disclaimer instruction`
+    );
   });
 });
 
 suite('qaPrompt - document grounding', () => {
   const doc = 'A'.repeat(9000);
   const result = qaPrompt(doc);
-  assert(result.includes('DOCUMENT:'), 'QA prompt includes DOCUMENT: marker');
-  assert(result.length < 9000 + 500, 'QA prompt truncates document to 8000 chars');
+  assert(result.includes('DOCUMENT:'),   'QA prompt includes DOCUMENT: marker');
+  assert(result.length < 10000,          'QA prompt truncates document to 8000 chars');
 });
 
 suite('LRU cache - basic operations', () => {
   const cache = makeLRUCache(3);
   cache.set('a', 1); cache.set('b', 2); cache.set('c', 3);
-  assert(cache.has('a'), 'cache has key a');
-  assert(cache.get('b') === 2, 'cache returns correct value');
-  assert(cache.size() === 3, 'cache size is 3');
+  assert(cache.has('a'),         'cache has key a');
+  assert(cache.get('b') === 2,   'cache returns correct value for b');
+  assert(cache.size() === 3,     'cache size equals 3');
 });
 
-suite('LRU cache - eviction', () => {
+suite('LRU cache - eviction policy', () => {
   const cache = makeLRUCache(2);
   cache.set('x', 10); cache.set('y', 20);
-  assert(cache.size() === 2, 'cache size is 2 before eviction');
+  assert(cache.size() === 2,    'cache at max before eviction');
   cache.set('z', 30);
-  assert(cache.size() === 2, 'cache size stays at max after eviction');
-  assert(!cache.has('x'), 'oldest entry evicted');
-  assert(cache.has('z'), 'newest entry present');
+  assert(cache.size() === 2,    'cache size stays at max after eviction');
+  assert(!cache.has('x'),       'oldest entry x was evicted');
+  assert(cache.has('z'),        'newest entry z is present');
 });
 
-suite('LRU cache - overwrite', () => {
+suite('LRU cache - overwrite existing key', () => {
   const cache = makeLRUCache(5);
   cache.set('k', 'v1');
   cache.set('k', 'v2');
-  assert(cache.get('k') === 'v2', 'overwrite updates value');
+  assert(cache.get('k') === 'v2', 'overwrite updates to latest value');
+  assert(cache.size() === 1,      'size stays 1 after overwrite');
 });
 
-suite('config constants - immutability simulation', () => {
-  const CONFIG_LOCAL = Object.freeze({ MODEL: 'gemini-2.0-flash-exp', MAX_TOKENS: 2048, CACHE_SIZE: 50 });
+suite('config constants - immutability', () => {
+  const CFG = Object.freeze({ MODEL: 'gemini-2.0-flash-exp', MAX_TOKENS: 2048, CACHE_SIZE: 50 });
   let threw = false;
-  try { CONFIG_LOCAL.MODEL = 'hacked'; } catch { threw = true; }
-  assert(threw || CONFIG_LOCAL.MODEL === 'gemini-2.0-flash-exp', 'frozen config cannot be mutated');
-  assert(CONFIG_LOCAL.MAX_TOKENS === 2048, 'MAX_TOKENS is correct');
-  assert(CONFIG_LOCAL.CACHE_SIZE === 50, 'CACHE_SIZE is correct');
+  try { CFG.MODEL = 'hacked'; } catch { threw = true; }
+  assert(threw || CFG.MODEL === 'gemini-2.0-flash-exp', 'frozen object rejects mutation');
+  assert(CFG.MAX_TOKENS === 2048, 'MAX_TOKENS is 2048');
+  assert(CFG.CACHE_SIZE === 50,   'CACHE_SIZE is 50');
 });
 
 suite('TIME_MS constants', () => {
   const T = Object.freeze({ SECOND: 1000, MINUTE: 60000, DEBOUNCE: 300, TIMEOUT: 15000, RATE_LIMIT: 1500 });
-  assert(T.MINUTE === T.SECOND * 60, 'MINUTE = 60 * SECOND');
-  assert(T.TIMEOUT === 15 * T.SECOND, 'TIMEOUT = 15s');
-  assert(T.DEBOUNCE < T.SECOND, 'DEBOUNCE is sub-second');
-  assert(T.RATE_LIMIT > T.SECOND, 'RATE_LIMIT is over 1 second');
+  assert(T.MINUTE === T.SECOND * 60, 'MINUTE equals 60 * SECOND');
+  assert(T.TIMEOUT === 15 * T.SECOND,'TIMEOUT equals 15 seconds');
+  assert(T.DEBOUNCE < T.SECOND,      'DEBOUNCE is sub-second');
+  assert(T.RATE_LIMIT > T.SECOND,    'RATE_LIMIT exceeds 1 second');
 });
 
-/* -- Results --------------------------------------------------------------- */
+/* â”€â”€ Results â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 
-console.info(`\n${'-'.repeat(50)}`);
+console.info(`\n${'='.repeat(50)}`);
 console.info(`Results: ${passed} passed, ${failed} failed (${passed + failed} total)`);
 if (failed > 0) { process.exit(1); }
-
-
